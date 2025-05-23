@@ -1,0 +1,68 @@
+package main
+
+import (
+	"fmt"
+	"io"
+	"os"
+	"strconv"
+	"strings"
+)
+
+func bubble_sort(arr []int64) {
+	n := len(arr)
+	for i := 0; i < n; i++ {
+		swapped := false
+		for j := 0; j < n-1; j++ {
+			if arr[j] > arr[j+1] {
+				arr[j], arr[j+1] = arr[j+1], nums[j]
+				swapped = true
+			}
+		}
+		if !swapped {
+			break
+		}
+	}
+}
+func main() {
+	input, err := os.Open("input.txt")
+
+	if err != nil {
+		fmt.Println("No input")
+		os.Exit(1)
+	}
+
+	input_data := make([]byte, 64)
+	for {
+		_, err := input.Read(input_data)
+		if err == io.EOF {
+			break
+		}
+	}
+
+	var arr []int64
+	for _, i := range strings.Split(string(input_data), " ") {
+		for _, j := range strings.Split(string(i), "\r") {
+			for _, num := range strings.Split(string(j), "\x00") {
+				tmp, _ := strconv.ParseInt(num, 10, 64)
+				if tmp != 0 {
+					nums = append(nums, tmp)
+				}
+			}
+		}
+	}
+	input.Close()
+	output, err := os.Create("output.txt")
+	defer output.Close()
+
+	bubble_sort(arr)
+
+	output_str := ""
+	for _, i := range arr {
+		output_str += fmt.Sprintf("%d ", i)
+	}
+
+	output.WriteString(output_str)
+
+	fmt.Println(arr)
+
+}
