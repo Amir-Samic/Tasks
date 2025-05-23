@@ -1,65 +1,67 @@
 package main
 
 import (
-	"bufio"
-	"fmt"
-	"log"
-	"os"
-	"sort"
-	"strconv"
-	"strings"
+ "bufio"
+ "fmt"
+ "log"
+ "os"
+ "sort"
+ "strconv"
+ "strings"
 )
 
-func parseInts(strs []string) ([]int64, error) {
-	var result []int64
-	for _, s := range strs {
-		arr := strings.TrimSpace(s)
-		if arr == "" {
-			continue
-		}
-		i, err := strconv.ParseInt(arr, 10, 64)
-		if err != nil {
-			log.Printf("Не удалось преобразовать '%s': %v", s, err)
-			continue
-		}
-		result = append(result, i)
-	}
-	return result, nil
+func convertToNumbers(stringValues []string) ([]int64, error) {
+ var numbers []int64
+ for _, str := range stringValues {
+  cleanedStr := strings.TrimSpace(str)
+  if cleanedStr == "" {
+   continue
+  }
+  num, err := strconv.ParseInt(cleanedStr, 10, 64)
+  if err != nil {
+   log.Printf("Ошибка преобразования '%s': %v", str, err)
+   continue
+  }
+  numbers = append(numbers, num)
+ }
+ return numbers, nil
 }
 
-
 func main() {
-	inputFile, err := os.Open("input.txt")
-	if err != nil {
-		log.Fatalf("Не удалось открыть файл: %v", err)
-	}
-	defer inputFile.Close()
+ sourceFile, err := os.Open("input.txt")
+ if err != nil {
+  log.Fatalf("Ошибка открытия файла: %v", err)
+ }
+ defer sourceFile.Close()
 
-	scanner := bufio.NewScanner(inputFile)
-	scanner.Split(bufio.ScanWords)
-	var words []string
-	for scanner.Scan() {
-		words = append(words, scanner.Text())
-	}
-	ints, err := parseInts(words)
-	if err != nil {
-		log.Fatalf("Ошибка при разборе целых чисел: %v", err)
-	}
-	sort.Slice(ints, func(i, j int) bool {
-		return ints[i] < ints[j]
-	})
+ fileScanner := bufio.NewScanner(sourceFile)
+ fileScanner.Split(bufio.ScanWords)
+ var textParts []string
+ for fileScanner.Scan() {
+  textParts = append(textParts, fileScanner.Text())
+ }
 
-	outputFile, err := os.Create("output.txt")
-	if err != nil {
-		log.Fatalf("Не удается создать файл: %v", err)
-	}
-	defer outputFile.Close()
+ numericValues, err := convertToNumbers(textParts)
+ if err != nil {
+  log.Fatalf("Ошибка преобразования данных: %v", err)
+ }
 
-	writer := bufio.NewWriter(outputFile)
-	for _, val := range ints {
-		fmt.Fprintf(writer, "%d ", val)
-	}
-	writer.Flush()
 
-	fmt.Println("Данные записываются в output.txt.")
+ sort.Slice(numericValues, func(i, j int) bool {
+  return numericValues[i] < numericValues[j]
+ })
+
+ resultFile, err := os.Create("output.txt")
+ if err != nil {
+  log.Fatalf("Ошибка создания файла: %v", err)
+ }
+ defer resultFile.Close()
+
+ fileWriter := bufio.NewWriter(resultFile)
+ for _, value := range numericValues {
+  fmt.Fprintf(fileWriter, "%d ", value)
+ }
+ fileWriter.Flush()
+
+ fmt.Println("Результат сохранен в output.txt.")
 }
