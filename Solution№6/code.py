@@ -1,80 +1,78 @@
-import copy
+def load_matrix_data(file_path):
+    with open(file_path, "r") as input_file:
+        file_lines = input_file.readlines()
+    matrix_data = []
+    for line in file_lines:
+        matrix_row = [float(num) for num in line.strip().split()]
+        matrix_data.append(matrix_row)
+    return matrix_data
 
-def read_matrix(filename):
-    with open(filename, "r") as file:
-        lines = file.readlines()
-    matrix = []
-    for line in lines:
-        row = [float(x) for x in line.strip().split()]
-        matrix.append(row)
-    return matrix
+def save_calculations(output_path, det_value, trace_value, transposed_matrix):
+    with open(output_path, 'w') as output_file:
+        output_file.write(f"Determinant: {det_value}\n")
+        output_file.write(f"Trace: {trace_value}\n")
+        output_file.write("Transposed Matrix:\n")
+        for row in transposed_matrix:
+            output_file.write(' '.join(map(str, row)) + '\n')
 
-def write_results(filename, determinant, trace, transposed):
-    with open(filename, 'w') as file:
-        file.write(f"Determiant: {determinant}\n")
-        file.write(f"Trace: {trace}\n")
-        file.write("Transposed:\n")
-        for row in transposed:
-            file.write(' '.join(map(str, row)) + '\n')
+def calculate_matrix_trace(matrix):
+    diagonal_sum = 0.0
+    for idx in range(len(matrix)):
+        diagonal_sum += matrix[idx][idx]
+    return diagonal_sum
 
-def get_trace(matrix):
-    trace = 0.0
-    for i in range(len(matrix)):
-        trace += matrix[i][i]
-    return trace
-
-def transpose_matrix(matrix):
+def create_transposed_matrix(original_matrix):
     transposed = []
-    for j in range(len(matrix[0])):
-        new_row = []
-        for i in range(len(matrix)):
-            new_row.append(matrix[i][j])
-        transposed.append(new_row)
+    for col_idx in range(len(original_matrix[0])):
+        transposed_row = []
+        for row_idx in range(len(original_matrix)):
+            transposed_row.append(original_matrix[row_idx][col_idx])
+        transposed.append(transposed_row)
     return transposed
 
-def get_submatrix(matrix, row_to_remove, col_to_remove):
-    submatrix = []
-    for i in range(len(matrix)):
-        if i == row_to_remove:
+def create_submatrix(full_matrix, exclude_row, exclude_col):
+    smaller_matrix = []
+    for row_idx in range(len(full_matrix)):
+        if row_idx == exclude_row:
             continue
         new_row = []
-        for j in range(len(matrix[i])):
-            if j == col_to_remove:
+        for col_idx in range(len(full_matrix[row_idx])):
+            if col_idx == exclude_col:
                 continue
-            new_row.append(matrix[i][j])
-        submatrix.append(new_row)
-    return submatrix
+            new_row.append(full_matrix[row_idx][col_idx])
+        smaller_matrix.append(new_row)
+    return smaller_matrix
 
-def compute_determinant(matrix):
-    n = len(matrix)
-    if n == 1:
+def calculate_matrix_determinant(matrix):
+    matrix_size = len(matrix)
+    if matrix_size == 1:
         return matrix[0][0]
-    if n == 2:
+    if matrix_size == 2:
         return matrix[0][0] * matrix[1][1] - matrix[0][1] * matrix[1][0]
     
-    determinant = 0.0
-    for j in range(n):
-        submatrix = get_submatrix(matrix, 0, j)
-        sign = (-1) ** j
-        sub_det = compute_determinant(submatrix)
-        determinant += sign * matrix[0][j] * sub_det
-    return determinant
+    total_determinant = 0.0
+    for column in range(matrix_size):
+        submatrix = create_submatrix(matrix, 0, column)
+        sign_multiplier = (-1) ** column
+        submatrix_det = calculate_matrix_determinant(submatrix)
+        total_determinant += sign_multiplier * matrix[0][column] * submatrix_det
+    return total_determinant
 
-def main():
-    matrix = read_matrix("input.txt")
+def execute_matrix_operations():
+    matrix = load_matrix_data("input.txt")
     
-    rows = len(matrix)
+    row_count = len(matrix)
     for row in matrix:
-        if len(row) != rows:
-            with open("output.txt", "w") as file:
-                file.write("Ошибка: матрица не квадратная\n")
+        if len(row) != row_count:
+            with open("output.txt", "w") as error_file:
+                error_file.write("Error: Matrix must be square\n")
             return
     
-    determinant = compute_determinant(matrix)
-    trace = get_trace(matrix)
-    transposed = transpose_matrix(matrix)
+    det = calculate_matrix_determinant(matrix)
+    trace = calculate_matrix_trace(matrix)
+    transposed = create_transposed_matrix(matrix)
     
-    write_results("output.txt", determinant, trace, transposed)
+    save_calculations("output.txt", det, trace, transposed)
 
-if __name__ == "__main__":
-    main()
+if name == "main":
+    execute_matrix_operations()
