@@ -56,7 +56,7 @@ func main() {
 	caesarText := caesar(shift, inputText)
 
 	outputText := fmt.Sprintf(
-		"Атбаш: %s\nЦезарь (сдвиг %d): %s",
+		"Атбаш: %s\nЦезарь: (сдвиг %d): %s",
 		atbashText,
 		shift,
 		caesarText,
