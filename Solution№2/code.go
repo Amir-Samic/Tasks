@@ -43,7 +43,7 @@ func main() {
 	}
 	ints, err := parseInts(words)
 	if err != nil {
-		log.Fatalf("Error parsing integers: %v", err)
+		log.Fatalf("Ошибка при разборе целых чисел: %v", err)
 	}
 	sort.Slice(ints, func(i, j int) bool {
 		return ints[i] < ints[j]
