@@ -1,63 +1,61 @@
 package main
 
 import (
-	"fmt"
-	"math"
-	"os"
-	"strconv"
-	"strings"
+ "fmt"
+ "math"
+ "os"
+ "strconv"
+ "strings"
 )
 
-//Решение квадратного уравнения
-func Binary(a, b, c float64) (string, string) {
-	var D = (b * b) - (4 * a * c)
+// Функция решения квадратного уравнения
+func solveQuadraticEquation(coeffA, coeffB, coeffC float64) (root1, root2 string) {
+ discriminant := (coeffB * coeffB) - (4 * coeffA * coeffC)
 
-	if D >= 0 {
-		x1 := ((-b) + math.Sqrt(D)) / (2 * a)
-		x2 := ((-b) - math.Sqrt(D)) / (2 * a)
-		return strconv.FormatFloat(x1, 'f', 2, 64), strconv.FormatFloat(x2, 'f', 2, 64)
-	} else {
-		sqrt := strconv.FormatFloat(math.Sqrt(-D)/(2*a), 'f', 2, 64)
+ if discriminant >= 0 {
+  // Действительные корни
+  realRoot1 := ((-coeffB) + math.Sqrt(discriminant)) / (2 * coeffA)
+  realRoot2 := ((-coeffB) - math.Sqrt(discriminant)) / (2 * coeffA)
+  return strconv.FormatFloat(realRoot1, 'f', 2, 64), 
+         strconv.FormatFloat(realRoot2, 'f', 2, 64)
+ } else {
+  // Комплексные корни
+  imaginaryPart := strconv.FormatFloat(math.Sqrt(-discriminant)/(2*coeffA), 'f', 2, 64)
+  realPart := strconv.FormatFloat(-coeffB/(2*coeffA), 'f', 2, 64)
 
-		x1 := strconv.FormatFloat(-b/(2*a), 'f', 1, 64) + "+" + sqrt + "i"
-		x2 := strconv.FormatFloat(-b/(2*a), 'f', 2, 64) + "-" + sqrt + "i"
+  complexRoot1 := realPart + "+" + imaginaryPart + "i"
+  complexRoot2 := realPart + "-" + imaginaryPart + "i"
 
-		return x1, x2
-	}
-
+  return complexRoot1, complexRoot2
+ }
 }
 
-//главная функция
 func main() {
-	filepath := "input.txt"
-	content, err := os.ReadFile(filepath)
-	if err != nil {
-		fmt.Println("Error")
-		return
-	}
-	nums := strings.Fields(string(content))
+ inputFilePath := "input.txt"
+ fileContent, err := os.ReadFile(inputFilePath)
+ if err != nil {
+  fmt.Println("Ошибка чтения файла")
+  return
+ }
 
-	fmt.Println(nums)
+ coefficients := strings.Fields(string(fileContent))
+ fmt.Println(coefficients)
 
-	var a, b, c float64
-	a, _ = strconv.ParseFloat(nums[0], 64)
-	b, _ = strconv.ParseFloat(nums[1], 64)
-	c, _ = strconv.ParseFloat(nums[2], 64)
+ var a, b, c float64
+ a, _ = strconv.ParseFloat(coefficients[0], 64)
+ b, _ = strconv.ParseFloat(coefficients[1], 64)
+ c, _ = strconv.ParseFloat(coefficients[2], 64)
 
-	x1, x2 := Binary(a, b, c)
+ solution1, solution2 := solveQuadraticEquation(a, b, c)
+ fmt.Println(solution1, solution2)
 
-	fmt.Println(x1, x2)
+ outputFile, err := os.Create("output.txt")
+ if err != nil {
+  fmt.Println("Ошибка создания файла")
+  return
+ }
+ defer outputFile.Close()
 
-
-	f, err := os.Create("output.txt")
-	if err != nil {
-		fmt.Println("Error")
-		return
-	}
-	defer f.Close()
-
-f.WriteString(x1)
-f.WriteString("\n")
-f.WriteString(x2)
-
+ outputFile.WriteString(solution1 + "\n")
+ outputFile.WriteString(solution2)
 }
