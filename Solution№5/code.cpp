@@ -1,116 +1,122 @@
-﻿#include <iostream>
 #include <fstream>
 #include <vector>
+#include <iostream>
 
 using namespace std;
-//Чтение матрицы
-vector<vector<double>> readMatrix() {
-    ifstream fin("input.txt");
-    vector<vector<double>> matrix;
 
-    if (!fin.is_open()) {
-        cout << "Не удалось открыть файл!" << endl;
-        return matrix;
+// Функция загрузки матрицы из файла
+vector<vector<double>> loadMatrixFromFile() {
+    ifstream inputFile("input.txt");
+    vector<vector<double>> matrixData;
+
+    if (!inputFile.is_open()) {
+        cout << "Ошибка открытия файла!" << endl;
+        return matrixData;
     }
 
-    double num;
-    while (fin >> num) {
-        vector<double> row;
-        row.push_back(num);
+    double value;
+    while (inputFile >> value) {
+        vector<double> currentRow;
+        currentRow.push_back(value);
 
-        while (fin.peek() != '\n' && fin.peek() != EOF) {
-            fin >> num;
-            row.push_back(num);
+        while (inputFile.peek() != '\n' && inputFile.peek() != EOF) {
+            inputFile >> value;
+            currentRow.push_back(value);
         }
 
-        matrix.push_back(row);
+        matrixData.push_back(currentRow);
     }
 
-    fin.close();
-    return matrix;
+    inputFile.close();
+    return matrixData;
 }
-//Вычисление следа матрицы
-double calculateTrace(const vector<vector<double>>& mat) {
-    double trace = 0;
-    for (int i = 0; i < mat.size(); i++) {
-        trace += mat[i][i];
-    }
-    return trace;
-}
-//Транспонирование матрицы
-vector<vector<double>> transposeMatrix(const vector<vector<double>>& mat) {
-    vector<vector<double>> result(mat[0].size(), vector<double>(mat.size()));
 
-    for (int i = 0; i < mat.size(); i++) {
-        for (int j = 0; j < mat[0].size(); j++) {
-            result[j][i] = mat[i][j];
+// Вычисление следа матрицы
+double computeMatrixTrace(const vector<vector<double>>& matrix) {
+    double traceValue = 0;
+    for (int i = 0; i < matrix.size(); i++) {
+        traceValue += matrix[i][i];
+    }
+    return traceValue;
+}
+
+// Транспонирование матрицы
+vector<vector<double>> computeMatrixTranspose(const vector<vector<double>>& matrix) {
+    vector<vector<double>> transposedMatrix(matrix[0].size(), vector<double>(matrix.size()));
+
+    for (int row = 0; row < matrix.size(); row++) {
+        for (int col = 0; col < matrix[0].size(); col++) {
+            transposedMatrix[col][row] = matrix[row][col];
         }
     }
 
-    return result;
+    return transposedMatrix;
 }
-//Вычисление определителя матрицы
-double calculateDeterminant(vector<vector<double>> mat) {
-    int n = mat.size();
 
-    if (n == 1) return mat[0][0];
-    if (n == 2) {
-        return mat[0][0] * mat[1][1] - mat[0][1] * mat[1][0];
+// Рекурсивное вычисление определителя
+double computeMatrixDeterminant(vector<vector<double>> matrix) {
+    int matrixSize = matrix.size();
+
+    if (matrixSize == 1) return matrix[0][0];
+    if (matrixSize == 2) {
+        return matrix[0][0] * matrix[1][1] - matrix[0][1] * matrix[1][0];
     }
 
-    double det = 0;
+    double determinantValue = 0;
 
-    for (int col = 0; col < n; col++) {
-        vector<vector<double>> submat(n - 1, vector<double>(n - 1));
+    for (int col = 0; col < matrixSize; col++) {
+        vector<vector<double>> minorMatrix(matrixSize - 1, vector<double>(matrixSize - 1));
 
-        for (int i = 1; i < n; i++) {
-            int subcol = 0;
-            for (int j = 0; j < n; j++) {
-                if (j == col) continue;
-                submat[i - 1][subcol] = mat[i][j];
-                subcol++;
+        for (int row = 1; row < matrixSize; row++) {
+            int minorCol = 0;
+            for (int matrixCol = 0; matrixCol < matrixSize; matrixCol++) {
+                if (matrixCol == col) continue;
+                minorMatrix[row - 1][minorCol] = matrix[row][matrixCol];
+                minorCol++;
             }
         }
 
-        double sign = (col % 2 == 0) ? 1 : -1;
-        det += sign * mat[0][col] * calculateDeterminant(submat);
+        double signCoefficient = (col % 2 == 0) ? 1 : -1;
+        determinantValue += signCoefficient * matrix[0][col] * computeMatrixDeterminant(minorMatrix);
     }
 
-    return det;
+    return determinantValue;
 }
-//Запись результатов
-void writeResults(double trace, double det, const vector<vector<double>>& transposed) {
-    ofstream fout("output.txt");
 
-    fout << "След матрицы: " << trace << endl;
-    fout << "Определитель матрицы: " << det << endl;
-    fout << "Транспонированная матрица:" << endl;
+// Сохранение результатов в файл
+void saveResultsToFile(double traceValue, double determinantValue, 
+                      const vector<vector<double>>& transposedMatrix) {
+    ofstream outputFile("output.txt");
 
-    for (const auto& row : transposed) {
-        for (double num : row) {
-            fout << num << " ";
+    outputFile << "След матрицы: " << traceValue << endl;
+    outputFile << "Определитель матрицы: " << determinantValue << endl;
+    outputFile << "Транспонированная матрица:" << endl;
+
+    for (const auto& row : transposedMatrix) {
+        for (double value : row) {
+            outputFile << value << " ";
         }
-        fout << endl;
+        outputFile << endl;
     }
 
-    fout.close();
+    outputFile.close();
 }
-//Главная функция
+
 int main() {
-    vector<vector<double>> matrix = readMatrix();
+    vector<vector<double>> matrix = loadMatrixFromFile();
 
     if (matrix.empty() || matrix.size() != matrix[0].size()) {
-        cout << "ERROR: matrix not square" << endl;
+        cout << "Ошибка: матрица должна быть квадратной" << endl;
         return 1;
     }
 
-    double trace = calculateTrace(matrix);
-    double det = calculateDeterminant(matrix);
-    vector<vector<double>> transposed = transposeMatrix(matrix);
+    double trace = computeMatrixTrace(matrix);
+    double determinant = computeMatrixDeterminant(matrix);
+    vector<vector<double>> transposed = computeMatrixTranspose(matrix);
 
-    writeResults(trace, det, transposed);
+    saveResultsToFile(trace, determinant, transposed);
 
-    cout << "Result in output.txt" << endl;
+    cout << "Результаты сохранены в output.txt" << endl;
 
     return 0;
 }
