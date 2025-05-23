@@ -1,22 +1,33 @@
 from string import ascii_uppercase
 
-#Чтение файла и ввод числа
-file = (open("input.txt").readline()).upper()
+# Чтение входных данных
+input_text = (open("input.txt").readline()).upper()
+shift_value = int(input())
 
-n = int(input())
+# Шифр Цезаря
+def apply_caesar_cipher(shift, text):
+    encrypted_text = ''
+    alphabet = ascii_uppercase
+    for char in text:
+        if char in alphabet:
+            new_position = (alphabet.index(char) + shift) % len(alphabet)
+            encrypted_text += alphabet[new_position]
+        else:
+            encrypted_text += char
+    return encrypted_text
 
-#шифр Цезаря
-def Cez(n, file):
-    res = ''
-    l =ascii_uppercase
-    for i in file:
-        res += l[(l.index(i) + n) % len(l)]
-    return res
-#шифр Атбаш
-def Atbash(file):
-    l = ascii_uppercase
-    return file.translate(str.maketrans(l + l.upper(), l[::-1] + l.upper()[::-1]))
+# Шифр Атбаш
+def apply_atbash_cipher(text):
+    alphabet = ascii_uppercase
+    translation_table = str.maketrans(
+        alphabet + alphabet.lower(),
+        alphabet[::-1] + alphabet.lower()[::-1]
+    )
+    return text.translate(translation_table)
 
-#Вывод результатов
-print(Atbash(file))
-print(Cez(n, file))
+# Обработка и вывод результатов
+encrypted_atbash = apply_atbash_cipher(input_text)
+encrypted_caesar = apply_caesar_cipher(shift_value, input_text)
+
+print(encrypted_atbash)
+print(encrypted_caesar)
