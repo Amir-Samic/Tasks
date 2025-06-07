@@ -43,9 +43,7 @@ int main() {
         return 1;
     }
 
-    string inputText;
-    getline(inFile, inputText);
-    inFile.close();
+    string inputText((istreambuf_iterator<char>(inFile)), istreambuf_iterator<char>());
 
     // Ввод сдвига
     int shift;
